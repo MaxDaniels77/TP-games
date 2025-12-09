@@ -5,7 +5,8 @@ from typing import Optional, Dict, Any
 from .config import Config
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+# Logging is configured in the main entry point (notebook/script)
+
 logger = logging.getLogger(__name__)
 
 class RawgApiClient:

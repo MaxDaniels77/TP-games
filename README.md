@@ -11,9 +11,11 @@ Este sistema extrae datos de videojuegos desde la **RAWG Video Games API**, los 
 - **Arquitectura Medallion:** Separación clara entre datos crudos (`data/bronze`) y refinados (`data/silver`).
 - **Almacenamiento Optimizado:** Uso de **Delta Lake** para ACID transactions y versionado.
 - **Carga Incremental e Idempotente:**
-  - El proceso de ingestión garantiza que no se generen duplicados si se corre múltiples veces el mismo día (lógica *Delete-before-Write* por partición).
+  - El proceso de ingestión garantiza que no se generen duplicados si se corre múltiples veces el mismo día.
+  - Soporte para **Ingesta Ilimitada**: Capacidad de descargar automáticamente todas las páginas disponibles para un rango de fechas histórico (ej. backfill de 6 meses).
+- **Logging Persistente:** Registro detallado de la ejecución en consola y en archivo (`logs/pipeline.log`).
 - **Calidad de Datos:** Manejo robusto de esquemas, tipos de datos nulos y estructuras JSON anidadas.
-- **Particionamiento:** Datos organizados por fecha de extracción (`extraction_date`) para mejorar el rendimiento de consultas.
+- **Particionamiento:** Datos organizados por fecha de extracción (`extraction_date`).
 
 ---
 
@@ -46,21 +48,6 @@ TP-games/
 pip install -r requirements.txt
 ```
 
-### 3. Configurar Variables de Entorno
-Crea un archivo `.env` en la raíz del proyecto y agrega tu clave:
-```ini
-RAWG_API_KEY=tu_api_key_aqui
-```
-
----
-
-## ▶️ Ejecución
-El proyecto está orquestado a través de **Jupyter Notebook**.
-
-1. Abre `main.ipynb`.
-2. Ejecuta todas las celdas secuencialmente.
-3. El notebook realizará:
-   - **Full Load** de Géneros.
    - **Incremental Load** de Juegos (Últimos 30 días).
    - **Transformación** a capa Silver.
    - **Verificación** mostrando los resultados finales.
@@ -69,6 +56,7 @@ El proyecto está orquestado a través de **Jupyter Notebook**.
 
 ## 🛠️ Detalles Técnicos
 - **Idempotencia:** En la carga incremental de juegos, el script elimina preventivamente los datos de la fecha actual antes de insertar los nuevos, permitiendo re-ejecuciones seguras.
+- **Paginación Inteligente:** El ingestor (`src/ingestor.py`) permite un parámetro `max_pages`. Si se omite, iterará infinitamente hasta consumir toda la respuesta de la API, ideal para cargas iniciales masivas.
 - **Manejo de Esquemas:** Se utiliza serialización JSON segura para columnas complejas (listas de plataformas, géneros, etc.) para evitar errores de tipo en Delta Lake.
 
 ---

@@ -51,28 +51,32 @@ class GameDataIngestor(RawgApiClient):
         except Exception as e:
             logger.error(f"Error escribiendo en Delta Lake: {e}")
 
-    def get_games_incremental(self, start_date: str, end_date: str):
+    def get_games_incremental(self, start_date: str, end_date: str, max_pages: Optional[int] = None):
         """
-        Obtiene juegos incrementalmente basado en un rango de fechas.
-        Estrategia: Append con Idempotencia por Partición.
+        Descarga juegos incrementalmente filtrando por rango de fechas (released).
         
-        Pasos para Idempotencia:
-        1. Identificamos la fecha de extracción actual.
-        2. Si ya existen datos para esta fecha en Delta Lake, LOS BORRAMOS.
-        3. Escribimos los nuevos datos (Append).
-        Esto permite re-ejecutar el script el mismo día sin generar duplicados.
+        Args:
+            start_date (str): Fecha de inicio (YYYY-MM-DD).
+            end_date (str): Fecha de fin (YYYY-MM-DD).
+            max_pages (int, optional): Límite de páginas. Si es None, descarga TODO hasta agotar resultados.
         """
         endpoint = "games"
         logger.info(f"Iniciando Carga Incremental para juegos ({start_date} a {end_date})...")
         
         all_games = []
         page = 1
-        max_pages = 5 
         dates_param = f"{start_date},{end_date}"
         
         # Bucle de Paginación
-        while page <= max_pages:
-            logger.info(f"Cargando página {page}/{max_pages}...")
+        while True:
+            # Check de seguridad si se especifica límite
+            if max_pages and page > max_pages:
+                logger.info(f"Se alcanzó el límite de páginas configurado ({max_pages}). Deteniendo.")
+                break
+
+            total_status = f"/{max_pages}" if max_pages else ""
+            logger.info(f"Cargando página {page}{total_status}...")
+            
             params = {
                 "dates": dates_param,
                 "page": page,
@@ -92,6 +96,7 @@ class GameDataIngestor(RawgApiClient):
             all_games.extend(results)
             
             if not response.get("next"):
+                logger.info("No hay más páginas disponibles.")
                 break
             page += 1
             
