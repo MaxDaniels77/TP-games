@@ -1,0 +1,5 @@
+requests
+pandas
+deltalake
+python-dotenv
+logging

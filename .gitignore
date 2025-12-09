@@ -1,0 +1,17 @@
+# Security
+.env
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Data Lake (Local storage)
+# Ignoramos la data para permitir cargas desde cero
+data/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
