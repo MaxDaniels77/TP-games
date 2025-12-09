@@ -41,10 +41,10 @@ class GameTransformer:
         # Convert 'released' to datetime
         df['released'] = pd.to_datetime(df['released'], errors='coerce')
         
-        # Deduplication: Drop duplicates based on game id and extraction_date
-        # Assuming we want unique records per extraction batch. 
-        # Or if multiple extractions happen, we might have dupes.
-        df.drop_duplicates(subset=['id', 'extraction_date'], keep='last', inplace=True)
+        # Deduplication: Keep ONLY the latest version of each game (Snapshot Strategy)
+        # Sort by extraction_date so 'last' is truly the most recent extraction.
+        df.sort_values(by='extraction_date', ascending=True, inplace=True)
+        df.drop_duplicates(subset=['id'], keep='last', inplace=True)
 
         # 3. COMPLEX TRANSFORMATION (Logic)
         # Metacritic: Impute or Create logic
@@ -107,6 +107,9 @@ class GameTransformer:
         
         # Sort for better readability
         analytics_df.sort_values(by=['released_year', 'game_count'], ascending=[False, False], inplace=True)
+        
+        # Reset index completely to avoid __index_level_0__ artifact in Delta Lake
+        analytics_df.reset_index(drop=True, inplace=True)
         
         analytics_path = os.path.join(self.silver_path, "games_analytics")
         try:
