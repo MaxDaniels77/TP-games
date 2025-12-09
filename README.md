@@ -79,5 +79,12 @@ Al finalizar, encontrarás dos tablas principales en `data/silver`:
 2. **games_analytics:** Agregación de métricas (Rating Promedio y Cantidad de Juegos) por Año y Género.
 
 ---
+
+## 📝 Comentarios Finales
+Este proyecto fue desarrollado bajo estrictas limitaciones de tiempo. Como Científico de Datos, el objetivo principal de cursar esta materia ha sido expandir mis capacidades en el ámbito de la Ingeniería de Datos.
+
+Si bien la implementación actual cumple satisfactoriamente con los requisitos de robustez, idempotencia y arquitectura solicitados, reconozco oportunidades valiosas para una mayor profundización. De haber contado con más tiempo, el siguiente paso lógico hubiese sido una exploración más exhaustiva de los múltiples endpoints de la API de RAWG, permitiendo realizar transformaciones lógicas más complejas e integrar modelos analíticos avanzados sobre los datos recolectados.
+
+---
 **Autor:** Daniel Arias
 **Materia:** Ingeniería de Datos - UTN
