@@ -352,3 +352,14 @@
 2025-12-08 23:46:31,752 - INFO - Loaded 17 records from Bronze Games.
 2025-12-08 23:46:31,770 - INFO - Saved 17 records to c:\Users\cyber\OneDrive\Desktop\Curso UTN\TP-games\data\silver\games_refined
 2025-12-08 23:46:31,788 - INFO - Saved 12 analytics records to c:\Users\cyber\OneDrive\Desktop\Curso UTN\TP-games\data\silver\games_analytics
+2025-12-08 23:53:46,989 - INFO - Logging iniciado. Archivo: logs\pipeline.log
+2025-12-08 23:53:46,995 - INFO - Iniciando Full Load para genres...
+2025-12-08 23:53:49,145 - INFO - Guardados 19 géneros en c:\Users\cyber\OneDrive\Desktop\Curso UTN\TP-games\data\bronze\genres (Mode: overwrite).
+2025-12-08 23:53:49,146 - INFO - Iniciando Carga Incremental para juegos (2025-12-01 a 2025-12-08)...
+2025-12-08 23:53:49,146 - INFO - Cargando página 1...
+2025-12-08 23:53:50,693 - INFO - No hay más páginas disponibles.
+2025-12-08 23:53:50,717 - INFO - Guardados 17 juegos exitosamente (Mode: Idempotent Append).
+2025-12-08 23:53:50,723 - INFO - Starting Silver Layer transformation...
+2025-12-08 23:53:50,762 - INFO - Loaded 17 records from Bronze Games.
+2025-12-08 23:53:50,779 - INFO - Saved 17 records to c:\Users\cyber\OneDrive\Desktop\Curso UTN\TP-games\data\silver\games_refined
+2025-12-08 23:53:50,802 - INFO - Saved 12 analytics records to c:\Users\cyber\OneDrive\Desktop\Curso UTN\TP-games\data\silver\games_analytics

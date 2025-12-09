@@ -41,10 +41,11 @@ class GameTransformer:
         # Convert 'released' to datetime
         df['released'] = pd.to_datetime(df['released'], errors='coerce')
         
-        # Deduplication: Keep ONLY the latest version of each game (Snapshot Strategy)
-        # Sort by extraction_date so 'last' is truly the most recent extraction.
+        # Deduplication: Keep one record per game PER DAY (Daily History)
+        # This allows tracking evolution (e.g. rating changes) over time.
+        # We sort by extraction_date to ensure deterministic results.
         df.sort_values(by='extraction_date', ascending=True, inplace=True)
-        df.drop_duplicates(subset=['id'], keep='last', inplace=True)
+        df.drop_duplicates(subset=['id', 'extraction_date'], keep='last', inplace=True)
 
         # 3. COMPLEX TRANSFORMATION (Logic)
         # Metacritic: Impute or Create logic
