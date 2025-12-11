@@ -11,14 +11,14 @@ from .config import Config
 
 logger = logging.getLogger(__name__)
 
-class GameDataIngestor(RawgApiClient):
+class GameDataIngestor:
     """
     Ingesta datos desde la API de RAWG hacia la capa Bronze (Delta Lake).
-    Hereda de RawgApiClient para manejar la conexión HTTP.
+    Utiliza composición para interactuar con RawgApiClient.
     """
 
     def __init__(self):
-        super().__init__()
+        self.client = RawgApiClient()
         self.bronze_path = Config.BRONZE_PATH
 
     def get_genres_full(self):
@@ -30,11 +30,15 @@ class GameDataIngestor(RawgApiClient):
         endpoint = "genres"
         logger.info(f"Iniciando Full Load para {endpoint}...")
         
-        # Pagina 1 con 40 resultados suele ser suficiente para los géneros principales
-        response = self._get(endpoint, params={"page_size": 40})
+        try:
+            # Pagina 1 con 40 resultados suele ser suficiente para los géneros principales
+            response = self.client.get_resource(endpoint, params={"page_size": 40})
+        except Exception as e:
+            logger.error(f"No se pudieron obtener los géneros: {e}")
+            return
         
         if not response or "results" not in response:
-            logger.error("No se pudieron obtener los géneros.")
+            logger.error("Respuesta de API inválida o sin resultados.")
             return
 
         df = pd.DataFrame(response["results"])
@@ -84,7 +88,11 @@ class GameDataIngestor(RawgApiClient):
                 "ordering": "-released"
             }
             
-            response = self._get(endpoint, params=params)
+            try:
+                response = self.client.get_resource(endpoint, params=params)
+            except Exception as e:
+                logger.error(f"Error obteniendo página {page}: {e}")
+                break
             
             if not response or "results" not in response:
                 break

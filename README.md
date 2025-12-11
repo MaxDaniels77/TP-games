@@ -76,3 +76,16 @@ Si bien la implementación actual cumple satisfactoriamente con los requisitos d
 ---
 **Autor:** Daniel Arias
 **Materia:** Ingeniería de Datos - UTN
+
+## 🔄 Mejoras Implementadas (Refactorización)
+Se han realizado mejoras técnicas y arquitectónicas para aumentar la robustez y mantenibilidad del código:
+
+1.  **Desacoplamiento (Composición sobre Herencia):**
+    *   Se refactorizó `GameDataIngestor` para utilizar **composición** en lugar de herencia. Ahora, el ingestor *tiene un* cliente API (`RawgApiClient`) en lugar de *ser un* cliente API. Esto mejora la testabilidad y flexibilidad del código.
+
+2.  **Resiliencia y Manejo de Errores:**
+    *   Se implementó una estrategia de **Retries (Reintentos)** automática en `RawgApiClient` utilizando `HTTPAdapter` y `urllib3`. El cliente ahora reintenta automáticamente peticiones fallidas por errores de servidor (5xx) o límites de tasa (429), con un backoff exponencial.
+    *   Se mejoró el manejo de excepciones: los métodos ahora levantan excepciones claras en lugar de fallar silenciosamente o retornar `None`, permitiendo que el pipeline reaccione adecuadamente ante errores críticos.
+
+3.  **Robustez en la Ingesta:**
+    *   El proceso de ingesta incremental ahora maneja mejor los fallos de red durante la paginación, asegurando que los errores se registren y se detenga el proceso de manera controlada para evitar inconsistencias.

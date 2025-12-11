@@ -1,11 +1,10 @@
 import time
 import logging
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from typing import Optional, Dict, Any
 from .config import Config
-
-# Configure logging
-# Logging is configured in the main entry point (notebook/script)
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ class RawgApiClient:
     """
 
     def __init__(self):
-        """Initializes the RawgApiClient with a session and default headers."""
+        """Initializes the RawgApiClient with a session, default headers, and retry strategy."""
         self.base_url = Config.BASE_URL
         self.api_key = Config.RAWG_API_KEY
         self.session = requests.Session()
@@ -31,16 +30,30 @@ class RawgApiClient:
         if not self.api_key:
             logger.warning("RAWG_API_KEY is missing. API calls will likely fail.")
 
-    def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+        # Configure Retry Strategy
+        retry_strategy = Retry(
+            total=3,  # Total number of retries
+            backoff_factor=1,  # Wait 1s, 2s, 4s...
+            status_forcelist=[429, 500, 502, 503, 504],  # Retry on these status codes
+            allowed_methods=["HEAD", "GET", "OPTIONS"]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
+
+    def get_resource(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Internal method to perform GET requests with rate limiting and error handling.
+        Perform GET requests with automatic retries and error handling.
 
         Args:
             endpoint (str): The API endpoint to query (e.g., 'games').
             params (dict, optional): Query parameters.
 
         Returns:
-            Optional[Dict[str, Any]]: The JSON response dictionary, or None on failure.
+            Dict[str, Any]: The JSON response dictionary.
+
+        Raises:
+            requests.exceptions.RequestException: If the request fails after retries.
         """
         url = f"{self.base_url}/{endpoint}"
         
@@ -50,8 +63,8 @@ class RawgApiClient:
         # Inject API Key automatically
         params["key"] = self.api_key
         
-        # Rate Limiting: Sleep 0.6 seconds before request
-        # RAWG allows limited requests, so this helps avoid immediate 429s.
+        # Rate Limiting: Sleep 0.6 seconds before request to be nice to the API
+        # Even with retries, it's good practice not to hammer the API.
         time.sleep(0.6)
 
         try:
@@ -61,11 +74,13 @@ class RawgApiClient:
             
         except requests.exceptions.HTTPError as e:
             logger.error(f"HTTP Error querying {url}: {e.response.status_code} - {e.response.text}")
+            raise
         except requests.exceptions.ConnectionError as e:
             logger.error(f"Connection Error querying {url}: {e}")
+            raise
         except requests.exceptions.Timeout as e:
             logger.error(f"Timeout Error querying {url}: {e}")
+            raise
         except requests.exceptions.RequestException as e:
             logger.error(f"Unexpected Request Error querying {url}: {e}")
-            
-        return None
+            raise
